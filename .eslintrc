@@ -1,0 +1,12 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "extends": ["react-app", "eslint:recommended", "plugin:react/recommended"],
+  "rules": {
+    "no-unused-vars": "off",
+    "react/prop-types": "off",
+    "react/react-in-jsx-scope": "off"
+  }
+}

@@ -14,7 +14,7 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",  // Thay đổi từ "node" sang "bundler"
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
