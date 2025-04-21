@@ -4,10 +4,10 @@ import {
     CheckCircle,
     X,
     Settings,
-    Clock,
-    BookOpen
+    Sun,
+    Moon,
+    Languages
 } from 'lucide-react';
-
 
 // Styled Components
 const Container = styled.div`
@@ -15,8 +15,9 @@ const Container = styled.div`
   min-height: 100vh;
   background-color: #f5f7fb;
   font-family: 'Inter', sans-serif;
-  flex:1;
+  flex: 1;
 `;
+
 const Content = styled.div`
   flex: 1;
   padding: 20px;
@@ -36,6 +37,7 @@ const PageTitle = styled.h1`
   color: #2c3e50;
   margin: 0;
 `;
+
 const Select = styled.select`
   width: 100%;
   padding: 10px 15px;
@@ -48,6 +50,12 @@ const Select = styled.select`
   &:focus {
     border-color: #3498db;
     box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+  }
+  
+  &:disabled {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+    opacity: 0.7;
   }
 `;
 
@@ -65,12 +73,19 @@ const Textarea = styled.textarea`
     border-color: #3498db;
     box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
   }
+  
+  &:disabled {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
 `;
 
 const SwitchContainer = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-bottom: 20px;
 `;
 
 const SwitchLabel = styled.label`
@@ -122,6 +137,7 @@ const SwitchText = styled.div`
   font-size: 14px;
   font-weight: 500;
 `;
+
 const SettingsSection = styled.div`
   margin-bottom: 30px;
   
@@ -168,7 +184,11 @@ const Label = styled.label`
   color: #34495e;
 `;
 
-const Input = styled.input`
+const DisabledLabel = styled(Label)`
+  color: #7f8c8d;
+`;
+
+const Input = styled.input<{ readOnly?: boolean }>`
   width: 100%;
   padding: 10px 15px;
   border: 1px solid #e0e4e8;
@@ -177,17 +197,16 @@ const Input = styled.input`
   outline: none;
   
   &:focus {
-    border-color: #3498db;
-    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    border-color: ${props => props.readOnly ? '#e0e4e8' : '#3498db'};
+    box-shadow: ${props => props.readOnly ? 'none' : '0 0 0 2px rgba(52, 152, 219, 0.2)'};
+  }
+  
+  &:disabled {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+    opacity: 0.7;
   }
 `;
-// Settings specific components
-const SettingsContainer = styled.div`
-  display: flex;
-  gap: 20px;
-  flex: 1;
-`;
-
 
 const SettingsContent = styled.div`
   background-color: white;
@@ -204,17 +223,17 @@ const AlertBox = styled.div<{ type: 'success' | 'warning' | 'error' }>`
   border-radius: 8px;
   margin-bottom: 20px;
   background-color: ${props =>
-        props.type === 'success' ? '#e8f7ef' :
-            props.type === 'warning' ? '#fff8e1' : '#fdecea'};
+    props.type === 'success' ? '#e8f7ef' :
+    props.type === 'warning' ? '#fff8e1' : '#fdecea'};
   border-left: 4px solid ${props =>
-        props.type === 'success' ? '#27ae60' :
-            props.type === 'warning' ? '#f39c12' : '#e74c3c'};
+    props.type === 'success' ? '#27ae60' :
+    props.type === 'warning' ? '#f39c12' : '#e74c3c'};
 `;
 
 const AlertIcon = styled.div<{ type: 'success' | 'warning' | 'error' }>`
   color: ${props =>
-        props.type === 'success' ? '#27ae60' :
-            props.type === 'warning' ? '#f39c12' : '#e74c3c'};
+    props.type === 'success' ? '#27ae60' :
+    props.type === 'warning' ? '#f39c12' : '#e74c3c'};
   margin-top: 2px;
 `;
 
@@ -247,142 +266,257 @@ const AlertCloseButton = styled.button`
   }
 `;
 
+const SaveButton = styled.button`
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 20px;
+  
+  &:hover {
+    background-color: #2980b9;
+  }
+  
+  &:active {
+    background-color: #1f6dad;
+  }
+`;
+
+const ThemeOption = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+
+const RadioContainer = styled.div`
+  display: flex;
+  gap: 25px;
+  margin-top: 10px;
+`;
+
+const RadioLabel = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #e0e4e8;
+  transition: all 0.2s;
+  
+  &:hover {
+    background-color: #f5f7fb;
+  }
+  
+  input:checked + & {
+    border-color: #3498db;
+    background-color: #ebf5fb;
+  }
+`;
+
+const RadioInput = styled.input`
+  display: none;
+`;
+
+const IconWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
 // Main App Component
 const LibraryManagementSystem = () => {
     const [savedAlert, setSavedAlert] = useState(false);
+    const [libraryName, setLibraryName] = useState("Thư viện trung tâm");
+    const [theme, setTheme] = useState("light");
+    const [language, setLanguage] = useState("vi");
+
+    const handleSave = () => {
+        setSavedAlert(true);
+        // Ở đây sẽ là logic lưu cài đặt thực tế
+    };
+
     return (
         <Container>
-
             <Content>
                 <Header>
                     <PageTitle>Cài đặt hệ thống</PageTitle>
                 </Header>
 
-                    
-
                 <SettingsContent>
-    {savedAlert && (
-        <AlertBox type="success">
-            <AlertIcon type="success">
-                <CheckCircle size={20} />
-            </AlertIcon>
-            <AlertContent>
-                <AlertTitle>Đã lưu cài đặt</AlertTitle>
-                <AlertMessage>
-                    Cài đặt của bạn đã được lưu thành công.
-                </AlertMessage>
-            </AlertContent>
-            <AlertCloseButton onClick={() => setSavedAlert(false)}>
-                <X size={16} />
-            </AlertCloseButton>
-        </AlertBox>
-    )}
+                    {savedAlert && (
+                        <AlertBox type="success">
+                            <AlertIcon type="success">
+                                <CheckCircle size={20} />
+                            </AlertIcon>
+                            <AlertContent>
+                                <AlertTitle>Đã lưu cài đặt</AlertTitle>
+                                <AlertMessage>
+                                    Cài đặt của bạn đã được lưu thành công.
+                                </AlertMessage>
+                            </AlertContent>
+                            <AlertCloseButton onClick={() => setSavedAlert(false)}>
+                                <X size={16} />
+                            </AlertCloseButton>
+                        </AlertBox>
+                    )}
 
-    <SettingsSection>
-        <SectionTitle>
-            <Settings size={20} />
-            Thông tin thư viện
-        </SectionTitle>
+                    <SettingsSection>
+                        <SectionTitle>
+                            <Settings size={20} />
+                            Thông tin thư viện
+                        </SectionTitle>
 
-        <FormGroup>
-            <Label htmlFor="library-name">Tên thư viện</Label>
-            <Input id="library-name" type="text" defaultValue="Thư viện trung tâm" />
-        </FormGroup>
+                        <FormGroup>
+                            <Label htmlFor="library-name">Tên thư viện</Label>
+                            <Input 
+                                id="library-name" 
+                                type="text" 
+                                disabled
+                                value={libraryName} 
+                                onChange={(e) => setLibraryName(e.target.value)} 
+                            />
+                        </FormGroup>
 
-        <FormRow>
-            <FormGroup>
-                <Label htmlFor="admin-email">Email quản trị</Label>
-                <Input id="admin-email" type="email" defaultValue="admin@thuvien.vn" />
-            </FormGroup>
+                        <FormRow>
+                            <FormGroup>
+                                <DisabledLabel htmlFor="admin-email">Email quản trị</DisabledLabel>
+                                <Input 
+                                    id="admin-email" 
+                                    type="email" 
+                                    defaultValue="admin@thuvien.vn" 
+                                    disabled 
+                                />
+                            </FormGroup>
 
-            <FormGroup>
-                <Label htmlFor="contact-phone">Số điện thoại liên hệ</Label>
-                <Input id="contact-phone" type="tel" defaultValue="0912345678" />
-            </FormGroup>
-        </FormRow>
+                            <FormGroup>
+                                <DisabledLabel htmlFor="contact-phone">Số điện thoại liên hệ</DisabledLabel>
+                                <Input 
+                                    id="contact-phone" 
+                                    type="tel" 
+                                    defaultValue="0912345678" 
+                                    disabled 
+                                />
+                            </FormGroup>
+                        </FormRow>
 
-        <FormGroup>
-            <Label htmlFor="library-address">Địa chỉ</Label>
-            <Input id="library-address" type="text" defaultValue="123 Đường Nguyễn Huệ, Quận 1, TP.HCM" />
-        </FormGroup>
+                        <FormGroup>
+                            <DisabledLabel htmlFor="library-address">Địa chỉ</DisabledLabel>
+                            <Input 
+                                id="library-address" 
+                                type="text" 
+                                defaultValue="123 Đường Nguyễn Huệ, Quận 1, TP.HCM" 
+                                disabled 
+                            />
+                        </FormGroup>
 
-        <FormGroup>
-            <Label htmlFor="description">Mô tả</Label>
-            <Textarea id="description" defaultValue="Thư viện trung tâm - Nơi chia sẻ kiến thức và kết nối cộng đồng." />
-        </FormGroup>
-    </SettingsSection>
+                        <FormGroup>
+                            <DisabledLabel htmlFor="description">Mô tả</DisabledLabel>
+                            <Textarea 
+                                id="description" 
+                                defaultValue="Thư viện trung tâm - Nơi chia sẻ kiến thức và kết nối cộng đồng." 
+                                disabled 
+                            />
+                        </FormGroup>
+                    </SettingsSection>
 
-    <SectionDivider />
+                    <SectionDivider />
 
-    <SettingsSection>
-        <SectionTitle>
-            <Clock size={20} />
-            Cài đặt mượn sách
-        </SectionTitle>
+                    <SettingsSection>
+                        <SectionTitle>
+                            {theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
+                            Giao diện
+                        </SectionTitle>
 
-        <FormRow>
-            <FormGroup>
-                <Label htmlFor="loan-period">Thời hạn mượn sách (ngày)</Label>
-                <Input id="loan-period" type="number" defaultValue="14" />
-            </FormGroup>
+                        <FormGroup>
+                            <Label>Chế độ giao diện</Label>
+                            <RadioContainer>
+                                <div>
+                                    <RadioInput
+                                        type="radio"
+                                        id="theme-light"
+                                        name="theme"
+                                        value="light"
+                                        checked={theme === "light"}
+                                        onChange={() => setTheme("light")}
+                                    />
+                                    <RadioLabel htmlFor="theme-light">
+                                        <IconWrapper>
+                                            <Sun size={16} />
+                                        </IconWrapper>
+                                        Sáng
+                                    </RadioLabel>
+                                </div>
+                                
+                                <div>
+                                    <RadioInput
+                                        type="radio"
+                                        id="theme-dark"
+                                        name="theme"
+                                        value="dark"
+                                        checked={theme === "dark"}
+                                        onChange={() => setTheme("dark")}
+                                    />
+                                    <RadioLabel htmlFor="theme-dark">
+                                        <IconWrapper>
+                                            <Moon size={16} />
+                                        </IconWrapper>
+                                        Tối
+                                    </RadioLabel>
+                                </div>
+                            </RadioContainer>
+                        </FormGroup>
+                    </SettingsSection>
 
-            <FormGroup>
-                <Label htmlFor="max-books">Số sách tối đa mỗi thành viên</Label>
-                <Input id="max-books" type="number" defaultValue="5" />
-            </FormGroup>
-        </FormRow>
+                    <SectionDivider />
+                    
+                    <SettingsSection>
+                        <SectionTitle>
+                            <Languages size={20} />
+                            Ngôn ngữ
+                        </SectionTitle>
 
-        <FormRow>
-            <FormGroup>
-                <Label htmlFor="fine-rate">Phí quá hạn (VND/ngày)</Label>
-                <Input id="fine-rate" type="number" defaultValue="5000" />
-            </FormGroup>
+                        <FormGroup>
+                            <Label>Ngôn ngữ hệ thống</Label>
+                            <RadioContainer>
+                                <div>
+                                    <RadioInput
+                                        type="radio"
+                                        id="lang-vi"
+                                        name="language"
+                                        value="vi"
+                                        checked={language === "vi"}
+                                        onChange={() => setLanguage("vi")}
+                                    />
+                                    <RadioLabel htmlFor="lang-vi">
+                                        Tiếng Việt
+                                    </RadioLabel>
+                                </div>
+                                
+                                <div>
+                                    <RadioInput
+                                        type="radio"
+                                        id="lang-en"
+                                        name="language"
+                                        value="en"
+                                        checked={language === "en"}
+                                        onChange={() => setLanguage("en")}
+                                    />
+                                    <RadioLabel htmlFor="lang-en">
+                                        English
+                                    </RadioLabel>
+                                </div>
+                            </RadioContainer>
+                        </FormGroup>
+                    </SettingsSection>
 
-            <FormGroup>
-                <Label htmlFor="renewal-limit">Số lần gia hạn tối đa</Label>
-                <Input id="renewal-limit" type="number" defaultValue="2" />
-            </FormGroup>
-        </FormRow>
-
-        <FormGroup>
-            <SwitchContainer>
-                <SwitchLabel>
-                    <SwitchInput type="checkbox" defaultChecked />
-                    <SwitchSlider />
-                </SwitchLabel>
-                <SwitchText>Gửi email nhắc nhở trước khi hết hạn</SwitchText>
-            </SwitchContainer>
-        </FormGroup>
-
-        <FormGroup>
-            <Label htmlFor="reminder-days">Số ngày gửi nhắc nhở trước hạn</Label>
-            <Input id="reminder-days" type="number" defaultValue="2" />
-        </FormGroup>
-    </SettingsSection>
-
-    <SectionDivider />
-
-    <SettingsSection>
-        <SectionTitle>
-            <BookOpen size={20} />
-            Cài đặt hiển thị
-        </SectionTitle>
-
-        <FormGroup>
-            <Label htmlFor="items-per-page">Số mục hiển thị mỗi trang</Label>
-            <Select id="items-per-page" defaultValue="10">
-                <option value="5">5</option>
-                <option value="10">10</option>
-                <option value="15">15</option>
-                <option value="25">25</option>
-                <option value="50">50</option>
-            </Select>
-        </FormGroup>
-    </SettingsSection>
-    <button onClick={() => setSavedAlert(true)}>Lưu cài đặt</button>
-
-</SettingsContent>
-
+                    <SaveButton onClick={handleSave}>Lưu cài đặt</SaveButton>
+                </SettingsContent>
             </Content>
         </Container>
     );

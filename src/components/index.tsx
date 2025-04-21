@@ -78,37 +78,59 @@ export const CardContent = styled.div`
 export const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed; /* Quan trọng để width chia đều chính xác */
 `;
 
+// Header container
 export const TableHead = styled.thead`
   border-bottom: 2px solid #e5e7eb;
 `;
 
-export const TableHeadCell = styled.th`
+// Header Cell (có truyền props width)
+interface CellProps {
+  width?: string;
+}
+
+export const TableHeadCell = styled.th<CellProps>`
   text-align: left;
   padding: 0.75rem 1rem;
   font-size: 0.875rem;
   font-weight: 600;
   color: #4b5563;
+  width: ${(props) => props.width || "auto"};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  align-items: center;
+  justify-content: center;
 `;
 
+// Body Row
 export const TableRow = styled.tr`
   border-bottom: 1px solid #e5e7eb;
-  
+
   &:hover {
     background-color: #f9fafb;
   }
 `;
 
-export const TableCell = styled.td`
+// Body Cell (có truyền props width)
+export const TableCell = styled.td<CellProps>`
   padding: 0.75rem 1rem;
   font-size: 0.875rem;
+  width: ${(props) => props.width || "auto"};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  align-items: center;
+  justify-content: center;
+
 `;
 
 type StatusType = 'active' | 'inactive' | 'overdue' | 'available' | 'borrowed' | 'reserved' | 'damaged';
 
 interface BadgeProps {
-  status?: StatusType;
+  status: StatusType;
 }
 
 export const Badge = styled.span<BadgeProps>`
